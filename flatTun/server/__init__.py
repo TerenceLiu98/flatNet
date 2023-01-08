@@ -1,6 +1,6 @@
-from modules import * 
+from server import * 
 
-from flask import Flask, Blueprint, jsonify, abort, request, make_response, url_for,g
+from flask import Flask, Blueprint, jsonify, abort, request, make_response, url_for,g, redirect
 from flask_restful import Api, Resource, reqparse
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -16,8 +16,8 @@ def register_extentions(app):
     database.init_app(app)
     
 def register_blueprints(app):
-	for module_name in ["auth"]:
-		module = import_module('modules.{}.routes'.format(module_name))
+	for module_name in ["auth", "netspace"]:
+		module = import_module('server.{}.routes'.format(module_name))
 		app.register_blueprint(module.routes)
                 
 @app.before_first_request

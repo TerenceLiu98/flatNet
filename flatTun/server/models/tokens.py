@@ -1,4 +1,5 @@
-from modules import *
+from server import database
+from dataclasses import dataclass
 
 
 @dataclass

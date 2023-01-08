@@ -1,6 +1,6 @@
-from modules import *
-from modules.config import JWT_SECRET_KEY
-from modules.utils import uuid_generator
+from server import *
+from server.config import JWT_SECRET_KEY
+from server.utils import uuid_generator
 
 from dataclasses import dataclass
 
@@ -18,11 +18,6 @@ class User(database.Model):
 	email:str = database.Column("email", database.String(128), primary_key=True, nullable=False) # email as the primary key
 	created: datetime = database.Column("created", database.DateTime, default=database.func.now())
 
-	def testdata(self):
-		user = User(username="user1", email="user@example.com", password="password")
-		database.session.add(user)
-		database.session.commit()
-
 	def generate_id(self):
 		self.id = uuid_generator(form="user")
 		
@@ -32,7 +27,7 @@ class User(database.Model):
 	def verify_password(self, password):
 		return check_password_hash(self.password, password) 
     
-	def generate_auth_token(self, expiration=600):
+	def generate_auth_token(self, expiration=7200):
 		return jwt.encode({'id': self.id, "exp": time.time() + expiration}, JWT_SECRET_KEY, algorithm='HS256')
 	
 	@staticmethod
@@ -42,8 +37,3 @@ class User(database.Model):
 		except Exception as e:
 			return None
 		return User.query.get(data['id'])
-
-
-	
-
-        

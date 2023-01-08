@@ -1,5 +1,4 @@
-from modules import init_app, database
-from modules.models.users import User as UserModel
+from server import init_app
 
 app = init_app()
 
