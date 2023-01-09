@@ -1,6 +1,6 @@
 # flatTun
 
-A successor of [wgtools](https://github.com/TerenceLiu98/wgtools/tree/dev), where I fxxk up the structure the code.
+A successor of [wgtools-dev](https://github.com/TerenceLiu98/wgtools/tree/dev), where I fxxk up the structure the code.
 
 Based on the my understanding of the SDN:
 1. Control: control the network traffic, issue the configuration and monitor (both data plane and the network)
