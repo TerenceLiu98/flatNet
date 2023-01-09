@@ -5,4 +5,11 @@ A successor of [wgtools](https://github.com/TerenceLiu98/wgtools/tree/dev), wher
 * Server: Flask-based with SQLite, trying to store the client information and subnet information.
 * Client: python-based script, trying to help setup the wirguard interface and vxlan
 
+## TODO:
 
+### Server:
+- [ ] role authorization with Token and warper
+- [ ] OAuth2.0 Authentication (combine with local authentication)
+
+### Client:
+- [ ] build client into the binary file 

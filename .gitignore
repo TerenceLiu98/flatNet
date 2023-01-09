@@ -2,6 +2,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,windows,linux,flask
 
 ### custdom ###
+**/.json
+**/.conf
+**/.DS_Store
 .json
 .conf
 

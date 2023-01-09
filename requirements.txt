@@ -1,7 +1,6 @@
 alembic==1.9.1
 aniso8601==9.0.1
 blinker==1.5
-certifi @ file:///C:/b/abs_85o_6fm0se/croot/certifi_1671487778835/work/certifi
 cffi==1.15.1
 charset-normalizer==2.1.1
 click==8.1.3
