@@ -4,7 +4,6 @@ from flask import Flask, Blueprint, jsonify, abort, request, make_response, url_
 from flask_restful import Api, Resource, reqparse
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 
 from dataclasses import dataclass
 from importlib import import_module
@@ -19,11 +18,12 @@ def register_blueprints(app):
 	for module_name in ["auth", "netspace"]:
 		module = import_module('server.{}.routes'.format(module_name))
 		app.register_blueprint(module.routes)
-                
+
 @app.before_first_request
 def initialize_database():
 	with app.app_context():
 		database.create_all()
+
 
 def init_app():
     app.config.from_pyfile("config.py")

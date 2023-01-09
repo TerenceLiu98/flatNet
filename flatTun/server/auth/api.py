@@ -3,8 +3,7 @@ from server.config import JWT_SECRET_KEY
 from server.models.users import User as UserModel
 from server.models.tokens import TokensBlacklist as TokensBlacklistModel
 
-from server.auth.utils import token_required
-
+from server.auth.utils import token_required, token_required_role
 
 class SignUp(Resource):
 	@staticmethod
@@ -19,6 +18,7 @@ class SignUp(Resource):
 		user = UserModel(username=username, email=email)
 		user.generate_id()
 		user.generate_password(password)
+		user.assign_role()
 		database.session.add(user)
 		database.session.commit()
 		return make_response(jsonify(user=user.username, id=user.id), 200)
@@ -32,14 +32,15 @@ class SignIn(Resource):
 		user = UserModel.query.filter_by(email=email).first()
 		if not user or not user.verify_password(password):
 			return make_response(jsonify(message='Invalid username or password'), 400)
-		token = user.generate_auth_token()
+		token = user.generate_auth_token(headers=request.headers)
 		response = make_response(jsonify(mesage="success"), 200)
 		response.headers['x-access-token'] = token
+		#response.headers['x-client'] = request.headers['x-client']
 		return response
 
 class SignOut(Resource):
 	@staticmethod
-	@token_required
+	@token_required_role('user')
 	def post(current_user):
 		token = request.headers['x-access-token']
 		token_status = TokensBlacklistModel.query.filter_by(expired_token=token).first()
@@ -51,7 +52,7 @@ class SignOut(Resource):
 		response = make_response(jsonify(message='success'), 200)
 		return response
 		
-class TokenRefresh(Resource):
+class Refresh(Resource):
 	@staticmethod
 	@token_required
 	def get(current_user):
@@ -61,7 +62,7 @@ class TokenRefresh(Resource):
 			expired_token = TokensBlacklistModel(expired_token=token)
 			database.session.add(expired_token)
 			database.session.commit()
-			token = current_user.generate_auth_token()
+			token = current_user.generate_auth_token(headers=request.headers)
 			response = make_response(jsonify(message="success"), 200)
 			response.headers['x-access-token'] = token
 		return response

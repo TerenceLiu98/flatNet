@@ -4,21 +4,26 @@ from server.models.users import User as UserModel
 from server.models.tokens import TokensBlacklist as TokensBlacklistModel
 from server.models.netspace import NodeInfo as NodeInfoModel, NetSpace as NetSpaceModel
 
-from server.auth.utils import token_required
+from server.auth.utils import token_required, token_required_role
 
 class NetSpace(Resource):
 	@staticmethod
-	@token_required
+	@token_required_role(['user', 'supernode', 'node'])
 	def get(current_user):
 		# Get all NetSapce with user.id
-		namespace = NetSpaceModel.query.filter_by(user_id=current_user.id).all()
+		netspace = NetSpaceModel.query.filter_by(user_id=current_user.id).all()
+		if not netspace:
+			response = make_response(jsonify(message='No NetSpace found'), 400)
+			response.headers['x-access-token'] = request.headers['x-access-token']
+			return response
 		ip_addr = request.remote_addr
-		response = make_response(jsonify(message='success', data=namespace, ip_addr=ip_addr), 200)
+		user_agent = request.user_agent
+		response = make_response(jsonify(message='success', data=netspace), 200)
 		response.headers['x-access-token'] = request.headers['x-access-token']
 		return response
 	
 	@staticmethod
-	@token_required
+	@token_required_role(['user'])
 	def post(current_user):
 		spacename = request.args.get("spacename")
 		if spacename is None:
@@ -41,7 +46,7 @@ class NetSpace(Resource):
 		return response
 	
 	@staticmethod
-	@token_required
+	@token_required_role(['user'])
 	def delete(current_user):
 		spacename = request.args.get("spacename")
 		if spacename is None:
@@ -62,7 +67,7 @@ class NetSpace(Resource):
 
 class NodeInfo(Resource):
 	@staticmethod
-	@token_required
+	@token_required_role(["user", "supernode", "node"])
 	def get(current_user):
 		# Get peers with user.id and netspace name
 		spacename = request.args.get("spacename")
@@ -81,7 +86,7 @@ class NodeInfo(Resource):
 		return response
 	
 	@staticmethod
-	@token_required
+	@token_required_role(["user", "supernode", "node"])
 	def put(current_user):
 		nodename = request.args.get("nodename")
 		spacename = request.args.get("spacename")
@@ -106,10 +111,11 @@ class NodeInfo(Resource):
 		return response
 	
 	@staticmethod
-	@token_required
+	@token_required_role(["user", "supernode", "node"])
 	def post(current_user):
 		nodename = request.args.get("nodename")
 		spacename = request.args.get("spacename")
+		role = request.args.get("nodetype")
 		netspace = NetSpaceModel.query.filter_by(user_id=current_user.id, spacename=spacename).first()
 		if nodename is None:
 			response = make_response(jsonify(message='Missing arguments'), 400)
@@ -129,6 +135,7 @@ class NodeInfo(Resource):
 		nodeinfo.generate_id(username=current_user.username)
 		nodeinfo.generate_addr(v4=netspace.v4subnet, v6=netspace.v6subnet, wg=netspace.wgsubnet,
 						v4_all=v4_all, v6_all=v6_all, wg_all=wg_all)
+		nodeinfo.assign_role(role=role)
 		database.session.add(nodeinfo)
 		database.session.commit()
 		response = make_response(jsonify(message='success', data=nodeinfo), 200)
@@ -136,7 +143,7 @@ class NodeInfo(Resource):
 		return response
 		
 	@staticmethod
-	@token_required
+	@token_required_role(["user", "supernode", "node"])
 	def delete(current_user):
 		nodename = request.args.get("nodename")
 		spacename = request.args.get("spacename")

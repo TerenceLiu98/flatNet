@@ -6,17 +6,18 @@ from server.utils import uuid_generator, v4SubNet, v6SubNet, random_v4_addr, ran
 class NodeInfo(database.Model):
 	__tablename__ = "nodeinfo"
 	id:str = database.Column("id", database.String(255), primary_key=True)
-	nodename = database.Column("nodename", database.String(48), nullable=False)
+	nodename = database.Column("nodename", database.String(16), nullable=False)
 	space_id: str = database.Column("space_id", database.ForeignKey("netspace.id"), nullable=False)
-	v4addr:str = database.Column("v4addr", database.String(255), nullable=False)
-	v6addr:str = database.Column("v6addr", database.String(255), nullable=False)
-	wgaddr:str = database.Column("wgaddr", database.String(255), nullable=False)
+	v4addr:str = database.Column("v4addr", database.String(36), nullable=False)
+	v6addr:str = database.Column("v6addr", database.String(48), nullable=False)
+	wgaddr:str = database.Column("wgaddr", database.String(36), nullable=False)
 	mtu: int = database.Column("mtu", database.Integer, nullable=False, default=1420)
 	listenport: int = database.Column("listenport", database.Integer, nullable=False, default=51820)
 	keepalive: int = database.Column("keepalive", database.Integer, nullable=False, default=25)
-	allowedips: str = database.Column("allowedips", database.String(255), nullable=False)
-	endpoint: str = database.Column("endpoint", database.String(255), nullable=True, default="")
-	publickey: str = database.Column("publickey", database.String(255), nullable=True, default="")
+	allowedips: str = database.Column("allowedips", database.String(128), nullable=False)
+	endpoint: str = database.Column("endpoint", database.String(48), nullable=True, default="")
+	publickey: str = database.Column("publickey", database.String(32), nullable=True, default="")
+	role: str = database.Column("role", database.Integer, nullable=False)
 	
 	def generate_id(self, username):
 		self.id = uuid_generator(form=f"node-{username}")
@@ -28,6 +29,12 @@ class NodeInfo(database.Model):
 		self.allowedips = self.v4addr[: -3] + "/32"
 		if self.v4addr in v4_all or self.v6addr in v6_all or self.wgaddr in wg_all:
 			self.generate_addr(v4, v6, wg, v4_all, v6_all, wg_all) 
+	
+	def assign_role(self, role=None):
+		if not role:
+			self.role = 4
+		else:
+			self.role = role
 	
 	def __repr__(self):
 		return "<NodeInfo(id='%s', nodename='%s', space_id='%s', v4addr='%s', v6addr='%s', wgaddr='%s', mtu='%s', listenport='%s', keepalive='%s', allowedips='%s', endpoint='%s', publickey='%s')>" % (
